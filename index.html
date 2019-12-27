@@ -5,108 +5,77 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <title>Carousel</title>
+        <link
+            href="https://fonts.googleapis.com/css?family=Poppins&display=swap"
+            rel="stylesheet"
+        />
         <link rel="stylesheet" href="src/styles.css" />
     </head>
     <body>
         <h2 class="header">Screenshots</h2>
         <div class="wrapper">
-            <div class="arrows">
-                <div class="switch">
-                    <div class="point"></div>
-                </div>
-                <p class="arrows__text">ARROWS</p>
+            <div class="arrows-switch">
+                <p class="screen-readers">
+                    It's switch menu, that allows you to set visibility
+                </p>
             </div>
             <h1 class="header header--main">Summer memories</h1>
         </div>
         <div class="container">
             <div class="carousel">
-                <button class="button button--left">
-                    <svg
-                        class="container__svg"
-                        style="width:24px;height:24px"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            class="container__path"
-                            fill="#000000"
-                            d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"
-                        />
-                    </svg>
-                </button>
                 <div class="carousel__container">
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower2.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower3.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
-                    <div class="carousel__slide carousel__slide--active">
+                    <div class="carousel__slide">
                         <img
                             src="src/images/flower4.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower5.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower6.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                     <div class="carousel__slide">
                         <img
                             src="src/images/flower7.jpg"
-                            alt=""
+                            alt="Really beautiful flower."
                             class="carousel__image"
                         />
                     </div>
                 </div>
-                <button class="button button--right">
-                    <svg
-                        class="container__svg"
-                        style="width:24px;height:24px"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            class="container__path"
-                            fill="#000000"
-                            d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                        />
-                    </svg>
-                </button>
             </div>
-            <div class="dotsNav">
-                <div class="dotsNav__dot"></div>
-                <div class="dotsNav__dot"></div>
-                <div class="dotsNav__dot"></div>
-                <div class="dotsNav__dot dotsNav__dot--active"></div>
-                <div class="dotsNav__dot"></div>
-                <div class="dotsNav__dot"></div>
-                <div class="dotsNav__dot"></div>
-            </div>
+            <div class="dotsNav"></div>
         </div>
         <script defer src="src/main2.js"></script>
     </body>

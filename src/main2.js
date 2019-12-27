@@ -1,27 +1,68 @@
-const buttonLeft = document.querySelector('.button--left');
-const buttonRight = document.querySelector('.button--right');
-
-//Switch
-
-const change = document.querySelector('.switch');
-
-change.addEventListener('click', () => {
-    change.firstElementChild.classList.toggle('point--active');
-    buttonLeft.classList.toggle('button--hidden');
-    buttonRight.classList.toggle('button--hidden');
-});
-
-//Carousel
-
-const dots = document.querySelectorAll('.dotsNav__dot');
-const carousel = document.querySelector('.carousel__container');
-
 window.addEventListener('load', () => {
+    const carousel = document.querySelector('.carousel');
+
+    const buttonLeft = document.createElement('button');
+    buttonLeft.classList.add('button');
+    buttonLeft.classList.add('button--left');
+    buttonLeft.innerHTML =
+        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg> <p class="screen-readers">Left button for moving photos.</p>';
+    carousel.appendChild(buttonLeft);
+
+    const buttonRight = document.createElement('button');
+    buttonRight.classList.add('button');
+    buttonRight.classList.add('button--right');
+    buttonRight.innerHTML =
+        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000"  d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg> <p class="screen-readers">Right button for moving photos.</p>';
+    carousel.appendChild(buttonRight);
+
+    const arrowsSwitch = document.querySelector('.arrows-switch');
+
+    const arrowsSwitchContainer = document.createElement('div');
+    arrowsSwitchContainer.classList.add('arrows-switch__container');
+
+    const arrowsSwitchPoint = document.createElement('div');
+    arrowsSwitchPoint.classList.add('arrows-switch__point');
+    arrowsSwitchContainer.appendChild(arrowsSwitchPoint);
+
+    const arrowsSwitchParagraph = document.createElement('p');
+    arrowsSwitchParagraph.classList.add('arrows-switch__paragraph');
+    arrowsSwitchParagraph.textContent = 'ARROWS';
+
+    arrowsSwitch.appendChild(arrowsSwitchContainer);
+    arrowsSwitch.appendChild(arrowsSwitchParagraph);
+
+    arrowsSwitchContainer.addEventListener('click', () => {
+        arrowsSwitchContainer.firstElementChild.classList.toggle(
+            'point--active'
+        );
+        buttonLeft.classList.toggle('button--hidden');
+        buttonRight.classList.toggle('button--hidden');
+    });
+
+    const carouselContainer = document.querySelector('.carousel__container');
+    const dotsNav = document.querySelector('.dotsNav');
+
     let slides = document.querySelectorAll('.carousel__slide');
     let elementWidth = slides[0].offsetWidth;
     let isInTransition = false;
-    //Middle Dot
-    let activeDot = 3;
+    let dots;
+    let activeDot = 0;
+    const maxCountOnScreen = Math.round(
+        document.body.offsetWidth / slides[0].offsetWidth
+    );
+
+    const slidesCounter = slides.length;
+
+    const createDots = slidesCounter => {
+        for (let counter = 0; counter < slidesCounter; counter++) {
+            const dot = document.createElement('div');
+            dot.classList.add('dotsNav__dot');
+            dotsNav.appendChild(dot);
+        }
+        dots = document.querySelectorAll('.dotsNav__dot');
+    };
+
+    createDots(slidesCounter);
 
     const moveCarousel = (slides, elementWidth) => {
         isInTransition = true;
@@ -30,7 +71,27 @@ window.addEventListener('load', () => {
         });
     };
 
+    const setActiveElement = slides => {
+        const middleElement = (maxCountOnScreen + 1) / 2;
+        let activeElement = slides[middleElement];
+
+        if (carouselContainer.querySelector('.carousel__slide--active')) {
+            carouselContainer
+                .querySelector('.carousel__slide--active')
+                .classList.remove('carousel__slide--active');
+        }
+        activeElement.classList.add('carousel__slide--active');
+
+        if (document.querySelector('.dotsNav__dot--active')) {
+            document
+                .querySelector('.dotsNav__dot--active')
+                .classList.remove('dotsNav__dot--active');
+        }
+        dots[activeDot].classList.add('dotsNav__dot--active');
+    };
+
     moveCarousel(slides, elementWidth);
+    setActiveElement(slides);
 
     slides.forEach(slide => {
         slide.animate(
@@ -49,36 +110,21 @@ window.addEventListener('load', () => {
         );
     });
 
-    const setActiveElement = slides => {
-        const activeElement = slides[3];
-
-        carousel
-            .querySelector('.carousel__slide--active')
-            .classList.remove('carousel__slide--active');
-        //The middle element
-        activeElement.classList.add('carousel__slide--active');
-
-        document
-            .querySelector('.dotsNav__dot--active')
-            .classList.remove('dotsNav__dot--active');
-        dots[activeDot].classList.add('dotsNav__dot--active');
-    };
-
     const moveToRight = () => {
         if (isInTransition === true) return;
-        carousel.appendChild(carousel.firstElementChild);
-        slides = carousel.querySelectorAll('.carousel__slide');
+        carouselContainer.appendChild(carouselContainer.firstElementChild);
+        slides = carouselContainer.querySelectorAll('.carousel__slide');
         moveCarousel(slides, elementWidth);
-        activeDot === 6 ? (activeDot = 0) : activeDot++;
+        activeDot === slidesCounter - 1 ? (activeDot = 0) : activeDot++;
         setActiveElement(slides);
     };
 
     const moveToLeft = () => {
         if (isInTransition === true) return;
-        carousel.prepend(carousel.lastElementChild);
-        slides = carousel.querySelectorAll('.carousel__slide');
+        carouselContainer.prepend(carouselContainer.lastElementChild);
+        slides = carouselContainer.querySelectorAll('.carousel__slide');
         moveCarousel(slides, elementWidth);
-        activeDot === 0 ? (activeDot = 6) : activeDot--;
+        activeDot === 0 ? (activeDot = slidesCounter - 1) : activeDot--;
         setActiveElement(slides);
     };
 
@@ -98,31 +144,37 @@ window.addEventListener('load', () => {
         }
     });
 
-    carousel.addEventListener('transitionend', () => {
+    carouselContainer.addEventListener('transitionend', () => {
         isInTransition = false;
     });
 
     const moveAfterTransitionRight = () => {
-        carousel.removeEventListener('transitionend', moveAfterTransitionRight);
+        carouselContainer.removeEventListener(
+            'transitionend',
+            moveAfterTransitionRight
+        );
         moveToRight();
     };
 
     const moveAfterTransitionLeft = () => {
-        carousel.removeEventListener('transitionend', moveAfterTransitionLeft);
+        carouselContainer.removeEventListener(
+            'transitionend',
+            moveAfterTransitionLeft
+        );
         moveToLeft();
     };
 
     slides.forEach(slide => {
         slide.addEventListener('click', () => {
-            //Middle Slide is 3rd position (0,1,2) from left, so we need to subtract two.
             if (isInTransition === true) return;
-            const moveCounter = parseInt(slide.style.left) / elementWidth - 2;
+            const multiplierOfMiddleElement = Math.trunc(maxCountOnScreen / 2);
+            const moveCounter =
+                parseFloat(slide.style.left) / elementWidth -
+                multiplierOfMiddleElement;
             if (moveCounter > 0) {
-                // for (let counter = 0; counter < moveCounter; counter++) {
                 moveToRight();
-                // }
                 if (moveCounter === 2) {
-                    carousel.addEventListener(
+                    carouselContainer.addEventListener(
                         'transitionend',
                         moveAfterTransitionRight
                     );
@@ -130,7 +182,7 @@ window.addEventListener('load', () => {
             } else if (moveCounter < 0) {
                 moveToLeft();
                 if (moveCounter === -2) {
-                    carousel.addEventListener(
+                    carouselContainer.addEventListener(
                         'transitionend',
                         moveAfterTransitionLeft
                     );
@@ -139,7 +191,6 @@ window.addEventListener('load', () => {
         });
     });
 
-    //Swipe Events
     document.addEventListener('touchstart', handleTouchStart, false);
     document.addEventListener('touchmove', handleTouchMove, false);
 
@@ -157,9 +208,9 @@ window.addEventListener('load', () => {
         const xNow = event.touches[0].clientX;
         const xDirection = xStart - xNow;
 
-        if (xDirection > 0) {
+        if (xDirection > 30) {
             moveToLeft();
-        } else if (xDirection < 0) {
+        } else if (xDirection < -30) {
             moveToRight();
         }
     }
