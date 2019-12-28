@@ -4,15 +4,20 @@ window.addEventListener('load', () => {
     const buttonLeft = document.createElement('button');
     buttonLeft.classList.add('button');
     buttonLeft.classList.add('button--left');
-    buttonLeft.innerHTML =
-        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg> <p class="screen-readers">Left button for moving photos.</p>';
+    buttonLeft.insertAdjacentHTML(
+        'afterbegin',
+        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/></svg> <p class="screen-readers">Left button for moving photos.</p>'
+    );
+
     carousel.appendChild(buttonLeft);
 
     const buttonRight = document.createElement('button');
     buttonRight.classList.add('button');
     buttonRight.classList.add('button--right');
-    buttonRight.innerHTML =
-        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000"  d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg> <p class="screen-readers">Right button for moving photos.</p>';
+    buttonRight.insertAdjacentHTML(
+        'afterbegin',
+        '<svg class="container__svg" style="width:24px;height:24px" viewBox="0 0 24 24"><path class="container__path" fill="#000000"  d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/></svg> <p class="screen-readers">Right button for moving photos.</p>'
+    );
     carousel.appendChild(buttonRight);
 
     const arrowsSwitch = document.querySelector('.arrows-switch');
@@ -41,6 +46,16 @@ window.addEventListener('load', () => {
 
     const carouselContainer = document.querySelector('.carousel__container');
     const dotsNav = document.querySelector('.dotsNav');
+
+    const generateSlide = image => {
+        const div = document.createElement('div');
+        div.appendChild(image);
+        div.classList.add('carousel__slide');
+        carouselContainer.appendChild(div);
+    };
+
+    const images = document.querySelectorAll('.carousel__image');
+    images.forEach(image => generateSlide(image));
 
     let slides = document.querySelectorAll('.carousel__slide');
     let elementWidth = slides[0].offsetWidth;
@@ -111,7 +126,9 @@ window.addEventListener('load', () => {
     });
 
     const moveToRight = () => {
-        if (isInTransition === true) return;
+        if (isInTransition) {
+            return;
+        }
         carouselContainer.appendChild(carouselContainer.firstElementChild);
         slides = carouselContainer.querySelectorAll('.carousel__slide');
         moveCarousel(slides, elementWidth);
@@ -120,7 +137,9 @@ window.addEventListener('load', () => {
     };
 
     const moveToLeft = () => {
-        if (isInTransition === true) return;
+        if (isInTransition) {
+            return;
+        }
         carouselContainer.prepend(carouselContainer.lastElementChild);
         slides = carouselContainer.querySelectorAll('.carousel__slide');
         moveCarousel(slides, elementWidth);
@@ -164,9 +183,15 @@ window.addEventListener('load', () => {
         moveToLeft();
     };
 
+    const background = document.createElement('div');
+    background.classList.add('background');
+    document.body.appendChild(background);
+
     slides.forEach(slide => {
         slide.addEventListener('click', () => {
-            if (isInTransition === true) return;
+            if (isInTransition) {
+                return;
+            }
             const multiplierOfMiddleElement = Math.trunc(maxCountOnScreen / 2);
             const moveCounter =
                 parseFloat(slide.style.left) / elementWidth -
@@ -189,6 +214,36 @@ window.addEventListener('load', () => {
                 }
             }
         });
+        slide.addEventListener('click', () => {
+            if (isInTransition) {
+                return;
+            }
+            if (
+                slide.classList.contains('carousel__slide--active') &&
+                !slide.classList.contains('carousel__slide--scale')
+            ) {
+                isInTransition = true;
+                slide.classList.add('carousel__slide--scale');
+                background.classList.add('background--scale');
+            } else if (slide.classList.contains('carousel__slide--scale')) {
+                carouselContainer
+                    .querySelector('.carousel__slide--scale')
+                    .classList.remove('carousel__slide--scale');
+                background.classList.remove('background--scale');
+            }
+        });
+    });
+
+    background.addEventListener('click', () => {
+        if (isInTransition) {
+            return;
+        }
+        if (carouselContainer.querySelector('.carousel__slide--scale')) {
+            carouselContainer
+                .querySelector('.carousel__slide--scale')
+                .classList.remove('carousel__slide--scale');
+            background.classList.remove('background--scale');
+        }
     });
 
     document.addEventListener('touchstart', handleTouchStart, false);
