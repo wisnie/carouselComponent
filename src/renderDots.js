@@ -1,3 +1,6 @@
+const slides = document.querySelectorAll('.carousel__slide');
+const slidesCounter = slides.length;
+
 const dotsNav = document.querySelector('.dotsNav');
 
 export const renderDots = slidesCounter => {
@@ -7,3 +10,5 @@ export const renderDots = slidesCounter => {
         dotsNav.appendChild(dot);
     }
 };
+
+renderDots(slidesCounter);

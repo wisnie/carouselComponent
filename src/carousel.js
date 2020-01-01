@@ -1,31 +1,22 @@
-import { renderButton } from './renderButton';
+import './renderButton';
+import './renderSlides';
+import './renderDots';
+import './animateSlides';
 import { renderSwitch } from './renderSwitch';
-import { generateSlide } from './renderSlides';
-import { renderDots } from './renderDots';
 
 const carouselContainer = document.querySelector('.carousel__container');
-const images = document.querySelectorAll('.carousel__image');
-
-renderButton('left');
-renderButton('right');
 const buttonRight = document.querySelector('.button--right');
 const buttonLeft = document.querySelector('.button--left');
-
-renderSwitch(buttonLeft, buttonRight);
-images.forEach(image => generateSlide(image));
+const pageWidth = document.body.offsetWidth;
 
 let slides = document.querySelectorAll('.carousel__slide');
+let dots = document.querySelectorAll('.dotsNav__dot');
 let elementWidth = slides[0].offsetWidth;
 let isInTransition = false;
 let activeDot = 0;
-console.log(dots);
 
-const maxCountOnScreen = Math.round(document.body.offsetWidth / elementWidth);
+const maxCountOnScreen = Math.round(pageWidth / elementWidth);
 const slidesCounter = slides.length;
-
-renderDots(slidesCounter);
-
-let dots = document.querySelectorAll('.dotsNav__dot');
 
 const moveCarousel = (slides, elementWidth) => {
     isInTransition = true;
@@ -36,42 +27,22 @@ const moveCarousel = (slides, elementWidth) => {
 
 const setActiveElement = slides => {
     const middleElement = (maxCountOnScreen + 1) / 2;
-    let activeElement = slides[middleElement];
+    const activeElement = slides[middleElement];
+    const previousActiveElement = carouselContainer.querySelector(
+        '.carousel__slide--active'
+    );
+    const previousActiveDot = document.querySelector('.dotsNav__dot--active');
 
-    if (carouselContainer.querySelector('.carousel__slide--active')) {
-        carouselContainer
-            .querySelector('.carousel__slide--active')
-            .classList.remove('carousel__slide--active');
+    if (previousActiveElement) {
+        previousActiveElement.classList.remove('carousel__slide--active');
     }
     activeElement.classList.add('carousel__slide--active');
 
-    if (document.querySelector('.dotsNav__dot--active')) {
-        document
-            .querySelector('.dotsNav__dot--active')
-            .classList.remove('dotsNav__dot--active');
+    if (previousActiveDot) {
+        previousActiveDot.classList.remove('dotsNav__dot--active');
     }
     dots[activeDot].classList.add('dotsNav__dot--active');
 };
-
-moveCarousel(slides, elementWidth);
-setActiveElement(slides);
-
-slides.forEach(slide => {
-    slide.animate(
-        [
-            // keyframes
-            { opacity: '0' },
-            { opacity: '1' }
-        ],
-        {
-            // timing options
-            duration: 500,
-            delay: 400,
-            iterations: 1,
-            fill: 'both'
-        }
-    );
-});
 
 const moveToRight = () => {
     if (isInTransition) {
@@ -217,3 +188,7 @@ function handleTouchMove(event) {
         moveToRight();
     }
 }
+
+renderSwitch(buttonLeft, buttonRight);
+moveCarousel(slides, elementWidth);
+setActiveElement(slides);
