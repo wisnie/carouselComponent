@@ -11,7 +11,7 @@
     overflow-x: hidden;
 }
 
-.background {
+.pageBackground {
     position: absolute;
     top: 0;
     width: 100vw;
@@ -20,7 +20,7 @@
     z-index: -10;
 }
 
-.background--scale {
+.pageBackground--scale {
     background: black;
     opacity: 0.7;
     z-index: 5;

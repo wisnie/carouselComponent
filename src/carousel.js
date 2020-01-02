@@ -2,12 +2,8 @@ import './renderButton';
 import './renderSlides';
 import './renderDots';
 import './animateSlides';
+import './renderPageBackground';
 import { renderSwitch } from './renderSwitch';
-
-const carouselContainer = document.querySelector('.carousel__container');
-const buttonRight = document.querySelector('.button--right');
-const buttonLeft = document.querySelector('.button--left');
-const pageWidth = document.body.offsetWidth;
 
 let slides = document.querySelectorAll('.carousel__slide');
 let dots = document.querySelectorAll('.dotsNav__dot');
@@ -15,8 +11,13 @@ let elementWidth = slides[0].offsetWidth;
 let isInTransition = false;
 let activeDot = 0;
 
+const carouselContainer = document.querySelector('.carousel__container');
+const carouselRightButton = document.querySelector('.button--right');
+const carouselLeftButton = document.querySelector('.button--left');
+const pageWidth = document.body.offsetWidth;
 const maxCountOnScreen = Math.round(pageWidth / elementWidth);
 const slidesCounter = slides.length;
+const pageBackground = document.querySelector('.pageBackground');
 
 const moveCarousel = (slides, elementWidth) => {
     isInTransition = true;
@@ -25,73 +26,72 @@ const moveCarousel = (slides, elementWidth) => {
     });
 };
 
-const setActiveElement = slides => {
+const changeCarouselChildrenOrder = direction => {
+    if (direction === 'left') {
+        carouselContainer.prepend(carouselContainer.lastElementChild);
+    } else if (direction === 'right') {
+        carouselContainer.appendChild(carouselContainer.firstElementChild);
+    }
+};
+
+const setActiveSlide = slides => {
     const middleElement = (maxCountOnScreen + 1) / 2;
     const activeElement = slides[middleElement];
     const previousActiveElement = carouselContainer.querySelector(
         '.carousel__slide--active'
     );
-    const previousActiveDot = document.querySelector('.dotsNav__dot--active');
-
     if (previousActiveElement) {
         previousActiveElement.classList.remove('carousel__slide--active');
     }
     activeElement.classList.add('carousel__slide--active');
+};
 
+const updateActiveDotCounter = direction => {
+    if (direction === 'left') {
+        activeDot === 0 ? (activeDot = slides.length - 1) : activeDot++;
+    } else if (direction === 'right') {
+        activeDot === slidesCounter - 1 ? (activeDot = 0) : activeDot++;
+    }
+};
+
+const updateDots = () => {
+    const previousActiveDot = document.querySelector('.dotsNav__dot--active');
     if (previousActiveDot) {
         previousActiveDot.classList.remove('dotsNav__dot--active');
     }
     dots[activeDot].classList.add('dotsNav__dot--active');
 };
 
-const moveToRight = () => {
-    if (isInTransition) {
-        return;
-    }
-    carouselContainer.appendChild(carouselContainer.firstElementChild);
-    slides = carouselContainer.querySelectorAll('.carousel__slide');
-    moveCarousel(slides, elementWidth);
-    activeDot === slidesCounter - 1 ? (activeDot = 0) : activeDot++;
-    setActiveElement(slides);
+const setActiveDot = direction => {
+    updateActiveDotCounter(direction);
+    updateDots();
 };
 
-const moveToLeft = () => {
-    if (isInTransition) {
-        return;
-    }
-    carouselContainer.prepend(carouselContainer.lastElementChild);
-    slides = carouselContainer.querySelectorAll('.carousel__slide');
-    moveCarousel(slides, elementWidth);
-    activeDot === 0 ? (activeDot = slidesCounter - 1) : activeDot--;
-    setActiveElement(slides);
+const setActiveElement = slides => {
+    setActiveSlide(slides);
+    setActiveDot();
 };
 
-buttonRight.addEventListener('click', () => {
-    moveToRight();
-});
+const updateSlideOrder = () => {
+    slides = carouselContainer.querySelectorAll('.carousel__slide');
+};
 
-buttonLeft.addEventListener('click', () => {
-    moveToLeft();
-});
-
-document.addEventListener('keydown', e => {
-    if (e.keyCode === 37) {
-        moveToLeft();
-    } else if (e.keyCode === 39) {
-        moveToRight();
+const moveToDirection = direction => {
+    if (!isInTransition) {
+        changeCarouselChildrenOrder(direction);
+        updateSlideOrder();
+        moveCarousel(slides, elementWidth);
+        setActiveDot(direction);
+        setActiveSlide(slides);
     }
-});
-
-carouselContainer.addEventListener('transitionend', () => {
-    isInTransition = false;
-});
+};
 
 const moveAfterTransitionRight = () => {
     carouselContainer.removeEventListener(
         'transitionend',
         moveAfterTransitionRight
     );
-    moveToRight();
+    moveToDirection('right');
 };
 
 const moveAfterTransitionLeft = () => {
@@ -99,70 +99,72 @@ const moveAfterTransitionLeft = () => {
         'transitionend',
         moveAfterTransitionLeft
     );
-    moveToLeft();
+    moveToDirection('left');
 };
 
-const background = document.createElement('div');
-background.classList.add('background');
-document.body.appendChild(background);
+carouselContainer.addEventListener('transitionend', () => {
+    isInTransition = false;
+});
+
+carouselRightButton.addEventListener('click', () => {
+    moveToDirection('right');
+});
+
+carouselLeftButton.addEventListener('click', () => {
+    moveToDirection('left');
+});
+
+document.addEventListener('keydown', e => {
+    if (e.keyCode === 37) {
+        moveToDirection('left');
+    } else if (e.keyCode === 39) {
+        moveToDirection('right');
+    }
+});
 
 slides.forEach(slide => {
     slide.addEventListener('click', () => {
-        if (isInTransition) {
-            return;
-        }
-        const multiplierOfMiddleElement = Math.trunc(maxCountOnScreen / 2);
-        const moveCounter =
-            parseFloat(slide.style.left) / elementWidth -
-            multiplierOfMiddleElement;
-        if (moveCounter > 0) {
-            moveToRight();
-            if (moveCounter === 2) {
-                carouselContainer.addEventListener(
-                    'transitionend',
-                    moveAfterTransitionRight
-                );
-            }
-        } else if (moveCounter < 0) {
-            moveToLeft();
-            if (moveCounter === -2) {
-                carouselContainer.addEventListener(
-                    'transitionend',
-                    moveAfterTransitionLeft
-                );
+        if (!isInTransition) {
+            const multiplierOfMiddleElement = Math.trunc(maxCountOnScreen / 2);
+            const moveCounter =
+                parseFloat(slide.style.left) / elementWidth -
+                multiplierOfMiddleElement;
+            if (moveCounter > 0) {
+                moveToDirection('right');
+                if (moveCounter === 2) {
+                    carouselContainer.addEventListener(
+                        'transitionend',
+                        moveAfterTransitionRight
+                    );
+                }
+            } else if (moveCounter < 0) {
+                moveToDirection('left');
+                if (moveCounter === -2) {
+                    carouselContainer.addEventListener(
+                        'transitionend',
+                        moveAfterTransitionLeft
+                    );
+                }
             }
         }
     });
     slide.addEventListener('click', () => {
-        if (isInTransition) {
-            return;
-        }
-        if (
-            slide.classList.contains('carousel__slide--active') &&
-            !slide.classList.contains('carousel__slide--scale')
-        ) {
-            isInTransition = true;
-            slide.classList.add('carousel__slide--scale');
-            background.classList.add('background--scale');
-        } else if (slide.classList.contains('carousel__slide--scale')) {
-            carouselContainer
-                .querySelector('.carousel__slide--scale')
-                .classList.remove('carousel__slide--scale');
-            background.classList.remove('background--scale');
+        if (!isInTransition) {
+            if (
+                slide.classList.contains('carousel__slide--active') &&
+                !slide.classList.contains('carousel__slide--scale')
+            ) {
+                isInTransition = true;
+                slide.classList.add('carousel__slide--scale');
+                pageBackground.classList.add('pageBackground--scale');
+            } else if (slide.classList.contains('carousel__slide--scale')) {
+                carouselContainer
+                    .querySelector('.carousel__slide--scale')
+                    .classList.remove('carousel__slide--scale');
+                pageBackground.classList.remove('pageBackground--scale');
+            }
         }
     });
-});
-
-background.addEventListener('click', () => {
-    if (isInTransition) {
-        return;
-    }
-    if (carouselContainer.querySelector('.carousel__slide--scale')) {
-        carouselContainer
-            .querySelector('.carousel__slide--scale')
-            .classList.remove('carousel__slide--scale');
-        background.classList.remove('background--scale');
-    }
 });
 
 document.addEventListener('touchstart', handleTouchStart, false);
@@ -183,12 +185,23 @@ function handleTouchMove(event) {
     const xDirection = xStart - xNow;
 
     if (xDirection > 30) {
-        moveToLeft();
+        moveToDirection('left');
     } else if (xDirection < -30) {
-        moveToRight();
+        moveToDirection('right');
     }
 }
 
-renderSwitch(buttonLeft, buttonRight);
+pageBackground.addEventListener('click', () => {
+    if (!isInTransition) {
+        if (carouselContainer.querySelector('.carousel__slide--scale')) {
+            carouselContainer
+                .querySelector('.carousel__slide--scale')
+                .classList.remove('carousel__slide--scale');
+            pageBackground.classList.remove('pageBackground--scale');
+        }
+    }
+});
+
+renderSwitch(carouselLeftButton, carouselRightButton);
 moveCarousel(slides, elementWidth);
 setActiveElement(slides);
