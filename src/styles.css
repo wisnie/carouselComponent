@@ -23,7 +23,7 @@
 .pageBackground--scale {
     background: black;
     opacity: 0.7;
-    z-index: 5;
+    z-index: 20;
 }
 
 .screen-readers {
@@ -136,7 +136,7 @@
     position: absolute;
     left: 0;
     padding: 2.5em;
-    transition: 300ms 100ms linear;
+    transition: 300ms linear;
     height: 100%;
     cursor: pointer;
     opacity: 1;
@@ -144,7 +144,7 @@
 
 .carousel__slide--scale {
     transform: scale(1.2);
-    z-index: 10;
+    z-index: 30;
 }
 
 .carousel__image {

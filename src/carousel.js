@@ -34,32 +34,48 @@ const changeCarouselChildrenOrder = direction => {
     }
 };
 
-const setActiveSlide = slides => {
-    const middleElement = (maxCountOnScreen + 1) / 2;
-    const activeElement = slides[middleElement];
+const deleteOldActiveSlide = () => {
     const previousActiveElement = carouselContainer.querySelector(
         '.carousel__slide--active'
     );
     if (previousActiveElement) {
         previousActiveElement.classList.remove('carousel__slide--active');
     }
+};
+
+const updateCurrentActiveSlide = slides => {
+    const middleElement = (maxCountOnScreen + 1) / 2;
+    const activeElement = slides[middleElement];
     activeElement.classList.add('carousel__slide--active');
+};
+
+const setActiveSlide = slides => {
+    deleteOldActiveSlide();
+    updateCurrentActiveSlide(slides);
 };
 
 const updateActiveDotCounter = direction => {
     if (direction === 'left') {
-        activeDot === 0 ? (activeDot = slides.length - 1) : activeDot++;
+        activeDot === 0 ? (activeDot = slides.length - 1) : activeDot--;
     } else if (direction === 'right') {
         activeDot === slidesCounter - 1 ? (activeDot = 0) : activeDot++;
     }
 };
 
-const updateDots = () => {
+const deleteOldActiveDot = () => {
     const previousActiveDot = document.querySelector('.dotsNav__dot--active');
     if (previousActiveDot) {
         previousActiveDot.classList.remove('dotsNav__dot--active');
     }
+};
+
+const addCurrentActiveDot = () => {
     dots[activeDot].classList.add('dotsNav__dot--active');
+};
+
+const updateDots = () => {
+    deleteOldActiveDot();
+    addCurrentActiveDot();
 };
 
 const setActiveDot = direction => {
@@ -67,13 +83,13 @@ const setActiveDot = direction => {
     updateDots();
 };
 
-const setActiveElement = slides => {
-    setActiveSlide(slides);
-    setActiveDot();
-};
-
 const updateSlideOrder = () => {
     slides = carouselContainer.querySelectorAll('.carousel__slide');
+};
+
+const setAcitveElements = (slides, direction) => {
+    setActiveSlide(slides);
+    setActiveDot(direction);
 };
 
 const moveToDirection = direction => {
@@ -81,26 +97,128 @@ const moveToDirection = direction => {
         changeCarouselChildrenOrder(direction);
         updateSlideOrder();
         moveCarousel(slides, elementWidth);
-        setActiveDot(direction);
-        setActiveSlide(slides);
+        setAcitveElements(slides, direction);
     }
 };
 
 const moveAfterTransitionRight = () => {
+    moveToDirection('right');
     carouselContainer.removeEventListener(
         'transitionend',
         moveAfterTransitionRight
     );
-    moveToDirection('right');
 };
 
 const moveAfterTransitionLeft = () => {
+    moveToDirection('left');
     carouselContainer.removeEventListener(
         'transitionend',
         moveAfterTransitionLeft
     );
-    moveToDirection('left');
 };
+
+const checkMultipliersDiffrence = slide => {
+    // It is an integer that specifies the multiplier for the style 'left' to the beginning of the middle element.
+    // For example, the first visible element has this multiplier set to 0, because its 'left' style is the result of (multiplier * elementWidth), which is 0.
+    const activeElementMultiplier = Math.trunc(maxCountOnScreen / 2);
+    // Subtraction of active multiplier from current clicked slide multiplier.
+    const subtractionOfMultipliers =
+        parseFloat(slide.style.left) / elementWidth - activeElementMultiplier;
+    return subtractionOfMultipliers;
+};
+
+const isApplicableForAddingClass = slide => {
+    if (checkMultipliersDiffrence(slide) === 0) {
+        return true;
+    }
+};
+
+const isApplicableForMove = slide => {
+    if (checkMultipliersDiffrence(slide) !== 0) {
+        return true;
+    }
+};
+
+const isOneMove = multipliersDiffrence => {
+    if (multipliersDiffrence < 2 && multipliersDiffrence > -2) {
+        return true;
+    }
+};
+
+const moveOnce = multipliersDiffrence => {
+    if (multipliersDiffrence > 0) {
+        moveToDirection('right');
+    } else {
+        moveToDirection('left');
+    }
+};
+
+const moveTwice = multipliersDiffrence => {
+    moveOnce(multipliersDiffrence);
+    if (multipliersDiffrence > 0) {
+        carouselContainer.addEventListener(
+            'transitionend',
+            moveAfterTransitionRight
+        );
+    } else {
+        carouselContainer.addEventListener(
+            'transitionend',
+            moveAfterTransitionLeft
+        );
+    }
+};
+
+const moveInProperDirection = slide => {
+    const multipliersDiffrence = checkMultipliersDiffrence(slide);
+    if (isOneMove(multipliersDiffrence)) {
+        moveOnce(multipliersDiffrence);
+    } else {
+        moveTwice(multipliersDiffrence);
+    }
+};
+
+const isActive = slide => {
+    if (slide.classList.contains('carousel__slide--scale')) {
+        return true;
+    }
+};
+
+const removeActiveClass = () => {
+    carouselContainer
+        .querySelector('.carousel__slide--scale')
+        .classList.remove('carousel__slide--scale');
+    pageBackground.classList.remove('pageBackground--scale');
+};
+
+const addActiveClass = slide => {
+    slide.classList.add('carousel__slide--scale');
+    pageBackground.classList.add('pageBackground--scale');
+};
+
+const toggleActiveClass = slide => {
+    isInTransition = true;
+    if (isActive(slide)) {
+        removeActiveClass();
+    } else {
+        addActiveClass(slide);
+    }
+};
+
+const addClickEventsOnSlide = slide => {
+    slide.addEventListener('click', () => {
+        if (isApplicableForMove(slide)) {
+            moveInProperDirection(slide);
+        } else if (isApplicableForAddingClass(slide)) {
+            toggleActiveClass(slide);
+        }
+    });
+};
+
+const addCustomSlideClickEvents = slides => {
+    slides.forEach(slide => addClickEventsOnSlide(slide));
+};
+
+addCustomSlideClickEvents(slides);
 
 carouselContainer.addEventListener('transitionend', () => {
     isInTransition = false;
@@ -120,51 +238,6 @@ document.addEventListener('keydown', e => {
     } else if (e.keyCode === 39) {
         moveToDirection('right');
     }
-});
-
-slides.forEach(slide => {
-    slide.addEventListener('click', () => {
-        if (!isInTransition) {
-            const multiplierOfMiddleElement = Math.trunc(maxCountOnScreen / 2);
-            const moveCounter =
-                parseFloat(slide.style.left) / elementWidth -
-                multiplierOfMiddleElement;
-            if (moveCounter > 0) {
-                moveToDirection('right');
-                if (moveCounter === 2) {
-                    carouselContainer.addEventListener(
-                        'transitionend',
-                        moveAfterTransitionRight
-                    );
-                }
-            } else if (moveCounter < 0) {
-                moveToDirection('left');
-                if (moveCounter === -2) {
-                    carouselContainer.addEventListener(
-                        'transitionend',
-                        moveAfterTransitionLeft
-                    );
-                }
-            }
-        }
-    });
-    slide.addEventListener('click', () => {
-        if (!isInTransition) {
-            if (
-                slide.classList.contains('carousel__slide--active') &&
-                !slide.classList.contains('carousel__slide--scale')
-            ) {
-                isInTransition = true;
-                slide.classList.add('carousel__slide--scale');
-                pageBackground.classList.add('pageBackground--scale');
-            } else if (slide.classList.contains('carousel__slide--scale')) {
-                carouselContainer
-                    .querySelector('.carousel__slide--scale')
-                    .classList.remove('carousel__slide--scale');
-                pageBackground.classList.remove('pageBackground--scale');
-            }
-        }
-    });
 });
 
 document.addEventListener('touchstart', handleTouchStart, false);
@@ -204,4 +277,8 @@ pageBackground.addEventListener('click', () => {
 
 renderSwitch(carouselLeftButton, carouselRightButton);
 moveCarousel(slides, elementWidth);
-setActiveElement(slides);
+setAcitveElements(slides);
+
+window.addEventListener('resize', () => {
+    window.location.href = '';
+});
