@@ -5,11 +5,13 @@ import './animateSlides';
 import './renderPageBackground';
 import { renderSwitch } from './renderSwitch';
 
+const DEFAULT_ACTIVE__DOT = 0;
+
 let slides = document.querySelectorAll('.carousel__slide');
 let dots = document.querySelectorAll('.dotsNav__dot');
 let elementWidth = slides[0].offsetWidth;
 let isInTransition = false;
-let activeDot = 0;
+let activeDot = DEFAULT_ACTIVE__DOT;
 
 const carouselContainer = document.querySelector('.carousel__container');
 const carouselRightButton = document.querySelector('.button--right');
@@ -56,9 +58,9 @@ const setActiveSlide = slides => {
 
 const updateActiveDotCounter = direction => {
     if (direction === 'left') {
-        activeDot === 0 ? (activeDot = slides.length - 1) : activeDot--;
+        activeDot = activeDot === 0 ? slidesCounter - 1 : activeDot - 1;
     } else if (direction === 'right') {
-        activeDot === slidesCounter - 1 ? (activeDot = 0) : activeDot++;
+        activeDot = activeDot === slidesCounter - 1 ? 0 : activeDot + 1;
     }
 };
 
@@ -128,21 +130,15 @@ const checkMultipliersDiffrence = slide => {
 };
 
 const isApplicableForAddingClass = slide => {
-    if (checkMultipliersDiffrence(slide) === 0) {
-        return true;
-    }
+    return checkMultipliersDiffrence(slide) === 0;
 };
 
 const isApplicableForMove = slide => {
-    if (checkMultipliersDiffrence(slide) !== 0) {
-        return true;
-    }
+    return checkMultipliersDiffrence(slide) !== 0;
 };
 
 const isOneMove = multipliersDiffrence => {
-    if (multipliersDiffrence < 2 && multipliersDiffrence > -2) {
-        return true;
-    }
+    return multipliersDiffrence < 2 && multipliersDiffrence > -2;
 };
 
 const moveOnce = multipliersDiffrence => {
@@ -178,9 +174,7 @@ const moveInProperDirection = slide => {
 };
 
 const isActive = slide => {
-    if (slide.classList.contains('carousel__slide--scale')) {
-        return true;
-    }
+    return slide.classList.contains('carousel__slide--scale');
 };
 
 const removeActiveClass = () => {
@@ -244,6 +238,7 @@ document.addEventListener('touchstart', handleTouchStart, false);
 document.addEventListener('touchmove', handleTouchMove, false);
 
 let xStart = null;
+let yStart = null;
 
 function handleTouchStart(event) {
     const touches = event.touches[0];

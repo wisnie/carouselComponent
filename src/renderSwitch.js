@@ -18,7 +18,6 @@ export const renderSwitch = (buttonLeft, buttonRight) => {
     const arrowsSwitchContainer = document.querySelector(
         '.arrows-switch__container'
     );
-
     arrowsSwitchContainer.addEventListener('click', () => {
         arrowsSwitchContainer.firstElementChild.classList.toggle(
             'point--active'
