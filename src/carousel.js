@@ -1,24 +1,38 @@
-import './renderButton';
-import './renderSlides';
-import './renderDots';
-import './animateSlides';
-import './renderPageBackground';
+import { renderButton } from './renderButton';
+import { generateSlide } from './renderSlides';
+import { renderDots } from './renderDots';
+import { animateSlides } from './animateSlides';
 import { renderSwitch } from './renderSwitch';
 
 const DEFAULT_ACTIVE__DOT = 0;
 
+const carousel = document.querySelector('.carousel');
+carousel.insertAdjacentHTML('beforeend', renderButton('left'));
+carousel.insertAdjacentHTML('beforeend', renderButton('right'));
+
+const carouselContainer = document.querySelector('.carousel__container');
+const images = document.querySelectorAll('.carousel__image');
+images.forEach(image => generateSlide(image, carouselContainer));
+
+const backgroundHTML = /* HTML */ `
+    <div class="pageBackground"></div>
+`;
+document.body.insertAdjacentHTML('afterbegin', backgroundHTML);
+
 let slides = document.querySelectorAll('.carousel__slide');
+const slidesCounter = slides.length;
+const dotsNav = document.querySelector('.dotsNav');
+renderDots(slidesCounter, dotsNav);
+
 let dots = document.querySelectorAll('.dotsNav__dot');
 let elementWidth = slides[0].offsetWidth;
 let isInTransition = false;
 let activeDot = DEFAULT_ACTIVE__DOT;
 
-const carouselContainer = document.querySelector('.carousel__container');
 const carouselRightButton = document.querySelector('.button--right');
 const carouselLeftButton = document.querySelector('.button--left');
 const pageWidth = document.body.offsetWidth;
 const maxCountOnScreen = Math.round(pageWidth / elementWidth);
-const slidesCounter = slides.length;
 const pageBackground = document.querySelector('.pageBackground');
 
 const moveCarousel = (slides, elementWidth) => {
@@ -273,6 +287,7 @@ pageBackground.addEventListener('click', () => {
 renderSwitch(carouselLeftButton, carouselRightButton);
 moveCarousel(slides, elementWidth);
 setAcitveElements(slides);
+animateSlides(slides);
 
 window.addEventListener('resize', () => {
     window.location.href = '';

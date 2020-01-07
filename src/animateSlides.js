@@ -1,6 +1,4 @@
-const slides = document.querySelectorAll('.carousel__slide');
-
-const animateSlides = slides => {
+export const animateSlides = slides => {
     slides.forEach(slide => {
         slide.animate(
             [
@@ -18,5 +16,3 @@ const animateSlides = slides => {
         );
     });
 };
-
-animateSlides(slides);
